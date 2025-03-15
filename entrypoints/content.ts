@@ -1,5 +1,5 @@
 export default defineContentScript({
-  matches: ['*://*.google.com/*'],
+  matches: ["*://www.coursera.org/*"],
   main() {
     console.log('Hello content.');
   },
