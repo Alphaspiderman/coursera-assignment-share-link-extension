@@ -1,3 +1,4 @@
+import { setupExtractor } from "@/components/getlink";
 import "./style.css";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
@@ -6,5 +7,4 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
       <div id="output"></div>
     </div>
 `;
-// TODO: Implement the component
-// setupExtractor(document.querySelector<HTMLButtonElement>("#extract")!, document.querySelector<HTMLDivElement>("#output")!);
+setupExtractor(document.querySelector<HTMLButtonElement>("#extract")!, document.querySelector<HTMLDivElement>("#output")!);
