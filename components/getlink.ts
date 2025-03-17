@@ -9,8 +9,10 @@ export function setupExtractor(
   // https://www.coursera.org/learn/{COURSE_SLUG}/peer/{ASSIGNMENT_ID}/{ASSIGNEMENT_SLUG}
 
   var url = "";
+  var tabId = -1;
   // Get active tab
   browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    tabId = tabs[0].id || -1;
     url = tabs[0].url || "";
     console.log("URL", url);
   });
@@ -20,6 +22,22 @@ export function setupExtractor(
       out_element.innerText =
         "Please navigate to the a peer reviewed assignment page first!";
       return;
+    }
+    // Make sure we are on the "submit" page
+    if (!url.includes("/submit")) {
+      // Ensure valid tabId
+      if (tabId === -1) {
+        // Update the output
+        out_element.innerText = "Please navigate to the submission page first!";
+        return;
+      } else {
+        // Update the output
+        out_element.innerText =
+          "Navigating to the submission page first. Please wait...";
+        // Navigate to the submission page
+        browser.tabs.update(tabId, { url: url + "/submit" });
+        return;
+      }
     }
 
     // Get the base URL
