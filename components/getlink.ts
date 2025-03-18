@@ -59,7 +59,19 @@ export function setupExtractor(
       const reviewLink = `https://www.coursera.org/learn/${course_slug}/peer/${assignment_id}/review/${data}`;
       document.getElementById(
         "output"
-      )!.innerText = `Your review link is: \n${reviewLink}`;
+      )!.innerHTML = `Your review link is: <br><a href="${reviewLink}" target="_blank">${reviewLink}</a> <button id="copyButton">Copy</button>`;
+
+      const copyButton = document.getElementById("copyButton")!;
+      copyButton.addEventListener("click", () => {
+        navigator.clipboard
+          .writeText(reviewLink)
+          .then(() => {
+            alert("Link copied to clipboard!");
+          })
+          .catch((err) => {
+            console.error("Failed to copy text: ", err);
+          });
+      });
     } else {
       document.getElementById("output")!.innerText =
         "No peer submission ID found. Please make a submission first.";
