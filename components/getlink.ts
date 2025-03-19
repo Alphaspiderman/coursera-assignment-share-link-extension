@@ -14,8 +14,15 @@ export function setupExtractor(
   browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     tabId = tabs[0].id || -1;
     url = tabs[0].url || "";
-    console.log("URL", url);
+    // console.log("URL", url);
   });
+
+  // Check if we are on Coursera
+  // TODO: FIX
+  // if (!url.includes("coursera.org")) {
+  //   out_element.innerText = "Please navigate to a Coursera page first!";
+  //   return;
+  // }
 
   button_elem.addEventListener("click", async () => {
     if (url === "" || !url.includes("peer")) {
@@ -33,9 +40,14 @@ export function setupExtractor(
       } else {
         // Update the output
         out_element.innerText =
-          "Navigating to the submission page first. Please wait...";
+          "Navigating to the submission page first. Please wait...\nReopen the extension if it closes.";
         // Navigate to the submission page
-        browser.tabs.update(tabId, { url: url + "/submit" });
+        browser.tabs.update(tabId, { url: url + "/submit" }, () => {
+          // Wait for the tab to update, then reload the extension
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000); // Adding a slight delay to ensure the tab has updated
+        });
         return;
       }
     }
@@ -59,7 +71,7 @@ export function setupExtractor(
       const reviewLink = `https://www.coursera.org/learn/${course_slug}/peer/${assignment_id}/review/${data}`;
       document.getElementById(
         "output"
-      )!.innerHTML = `Your review link is: <br><a href="${reviewLink}" target="_blank">${reviewLink}</a> <button id="copyButton">Copy</button>`;
+      )!.innerHTML = `Your review link is: <a href="${reviewLink}" target="_blank">CLICK ME</a> <br> <button id="copyButton">Copy</button>`;
 
       const copyButton = document.getElementById("copyButton")!;
       copyButton.addEventListener("click", () => {
