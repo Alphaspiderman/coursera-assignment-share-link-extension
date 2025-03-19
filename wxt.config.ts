@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 export default defineConfig({
   extensionApi: "chrome",
   manifest: {
+    name: "Coursera Assignment Review Link Extractor",
     permissions: ["storage", "webRequest"],
   },
   runner: defineRunnerConfig({
