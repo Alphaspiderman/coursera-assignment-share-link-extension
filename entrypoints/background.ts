@@ -7,7 +7,10 @@ export default defineBackground(() => {
 
   browser.webRequest.onCompleted.addListener(
     async function (details) {
+      // console.log("Request", details);
+      // console.log("URL", details.url, "Matches?", details.url.includes("/api/onDemandPeerComments"));
       if (details.url.includes("/api/onDemandPeerComments")) {
+        console.log("Got a request to /api/onDemandPeerComments");
         const urlParams = new URLSearchParams(details.url);
         const peerSubmissionId = urlParams.get("peerSubmissionId");
         if (peerSubmissionId) {

@@ -1,92 +1,91 @@
 import { storage } from "wxt/storage";
 
 export function setupExtractor(
-  button_elem: HTMLButtonElement,
-  out_element: HTMLDivElement
+  buttonElem: HTMLButtonElement,
+  outElement: HTMLDivElement
 ) {
-  // URL Formats
-  // https://www.coursera.org/learn/{COURSE_SLUG}/peer/{ASSIGNMENT_ID}/{ASSIGNEMENT_SLUG}/submit
-  // https://www.coursera.org/learn/{COURSE_SLUG}/peer/{ASSIGNMENT_ID}/{ASSIGNEMENT_SLUG}
+  let url = "";
+  let tabId = -1;
 
-  var url = "";
-  var tabId = -1;
   // Get active tab
   browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    tabId = tabs[0].id || -1;
-    url = tabs[0].url || "";
-    // console.log("URL", url);
+    tabId = tabs[0]?.id || -1;
+    url = tabs[0]?.url || "";
+    console.log("Active URL:", url);
   });
 
-  // Check if we are on Coursera
-  // TODO: FIX
-  // if (!url.includes("coursera.org")) {
-  //   out_element.innerText = "Please navigate to a Coursera page first!";
-  //   return;
-  // }
-
-  button_elem.addEventListener("click", async () => {
-    if (url === "" || !url.includes("peer")) {
-      out_element.innerText =
-        "Please navigate to the a peer reviewed assignment page first!";
+  buttonElem.addEventListener("click", async () => {
+    if (!url.includes("peer")) {
+      outElement.innerText =
+        "Please navigate to a peer-reviewed assignment page first!";
       return;
     }
-    // Make sure we are on the "submit" page
+
     if (!url.includes("/submit")) {
-      // Ensure valid tabId
       if (tabId === -1) {
-        // Update the output
-        out_element.innerText = "Please navigate to the submission page first!";
-        return;
-      } else {
-        // Update the output
-        out_element.innerText =
-          "Navigating to the submission page first. Please wait...\nReopen the extension if it closes.";
-        // Navigate to the submission page
-        browser.tabs.update(tabId, { url: url + "/submit" }, () => {
-          // Wait for the tab to update, then reload the extension
-          setTimeout(() => {
-            window.location.reload();
-          }, 5000); // Adding a slight delay to ensure the tab has updated
-        });
+        outElement.innerText = "Please navigate to the submission page first!";
         return;
       }
+
+      outElement.innerText =
+        "Navigating to the submission page. Please wait...\nReopen the extension if it closes.";
+      browser.tabs.update(tabId, { url: `${url}/submit` }, () => {
+        setTimeout(() => window.location.reload(), 5000);
+      });
+      return;
     }
 
-    // Get the base URL
     const stripped = url.replace("https://www.coursera.org/learn/", "");
-    // Structure: {COURSE_SLUG}/peer/{ASSIGNMENT ID}/{ASSIGNEMENT_SLUG}
-    console.log("Stripped", stripped);
-    const parts = stripped.split("/");
-    const assignment_id = parts[2];
-    const course_slug = parts[0];
-    console.log("Assignment ID", assignment_id);
-    console.log("Course Slug", course_slug);
+    const [courseSlug, , assignmentId] = stripped.split("/");
+    const storageKey = `peerSubmissionId-${assignmentId}`;
 
-    const storageKey = `peerSubmissionId-${assignment_id}`;
-
-    var data = await storage.getItem(`local:${storageKey}`);
-
-    console.log("Data", data);
-    if (data) {
-      const reviewLink = `https://www.coursera.org/learn/${course_slug}/peer/${assignment_id}/review/${data}`;
-      document.getElementById(
-        "output"
-      )!.innerHTML = `Your review link is: <a href="${reviewLink}" target="_blank">CLICK ME</a> <br> <button id="copyButton">Copy</button>`;
-
-      const copyButton = document.getElementById("copyButton")!;
-      copyButton.addEventListener("click", () => {
-        navigator.clipboard
-          .writeText(reviewLink)
-          .then(() => {
-            alert("Link copied to clipboard!");
-          })
-          .catch((err) => {
-            console.error("Failed to copy text: ", err);
-          });
-      });
-    } else {
-      document.getElementById("output")!.innerText =
-        "No peer submission ID found. Please make a submission first.";
+    try {
+      const data = await storage.getItem(`local:${storageKey}`);
+      if (data) {
+        showReviewLink(courseSlug, assignmentId, data);
+      } else {
+        handleMissingData(courseSlug, assignmentId, storageKey);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
   });
+
+  function showReviewLink(courseSlug: string, assignmentId: string, data: any) {
+    const reviewLink = `https://www.coursera.org/learn/${courseSlug}/peer/${assignmentId}/review/${data}`;
+    const assignmentLink = document.getElementById("assignmentLink");
+    const outputLink = document.getElementById("output_link");
+    const outputNoLink = document.getElementById("output_no_link");
+
+    assignmentLink?.setAttribute("href", reviewLink);
+    outputLink?.removeAttribute("hidden");
+    outputNoLink?.setAttribute("hidden", "true");
+
+    const copyButton = document.getElementById("copyButton");
+    copyButton?.addEventListener("click", () => {
+      navigator.clipboard
+        .writeText(reviewLink)
+        .then(() => alert("Link copied to clipboard!"))
+        .catch((err) => console.error("Failed to copy text:", err));
+    });
+  }
+
+  async function handleMissingData(
+    courseSlug: string,
+    assignmentId: string,
+    storageKey: string
+  ) {
+    const outputNoLink = document.getElementById("output_no_link");
+    outputNoLink?.removeAttribute("hidden");
+
+    setTimeout(async () => {
+      const data = await storage.getItem(`local:${storageKey}`);
+      if (data) {
+        showReviewLink(courseSlug, assignmentId, data);
+      } else {
+        outputNoLink!.innerText =
+          "Failed to get the review link. Please try again by reloading the page!";
+      }
+    }, 10000);
+  }
 }

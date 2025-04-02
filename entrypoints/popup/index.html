@@ -12,10 +12,40 @@
       <p style="text-align: center">
         Click the button below to extract the review links of your assignment
       </p>
-      <div id="app"></div>
+      <div id="app">
+        <div>
+          <p
+            id="disclaimer"
+            style="color: red; text-align: center; font-size: 0.9em"
+          >
+            Warning: Any violations of the terms set by Coursera or its
+            affiliates are solely the responsibility of the user. Developer is
+            NOT responsible for any misuse of this extension or ANY and ALL
+            effects it may cause.
+          </p>
+          <br />
+          <button id="extract">Extract</button>
+          <br />
+          <div id="misc_message"></div>
+          <div id="output_link" hidden>
+            Your review link is:
+            <a target="_blank" id="assignmentLink">CLICK ME</a>
+            <br />
+            <button id="copyButton">Copy</button><br />
+          </div>
+          <div id="output_no_link" hidden>
+            No review link found in Storage. Please wait for a few seconds as we
+            attempt to extract the link.
+          </div>
+        </div>
+      </div>
       <script type="module" src="./main.ts"></script>
 
-      <a href="/about.html" style="margin-top: 20px; text-decoration: none; color: blue;">About</a>
+      <a
+        href="/about.html"
+        style="margin-top: 20px; text-decoration: none; color: blue"
+        >About</a
+      >
     </div>
   </body>
 </html>
