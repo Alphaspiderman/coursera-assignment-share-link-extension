@@ -6,7 +6,7 @@ export default defineConfig({
   extensionApi: "chrome",
   manifest: {
     name: "Coursera Assignment Review Link Extractor",
-    permissions: ["storage", "webRequest"],
+    permissions: ["storage", "webRequest", "activeTab"],
   },
   runner: defineRunnerConfig({
     // On Windows, the path must be absolute
