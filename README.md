@@ -12,7 +12,7 @@ Some courses may not have the share link feature enabled, or it may have been re
 
 ## Installation
 
-- **Chrome Web Store Link:** Publication Pending
+- **Chrome Web Store Link:** https://chromewebstore.google.com/detail/fedhlkjnidambfcefgagpfpjakbhgncj
 
 ## How to Use
 

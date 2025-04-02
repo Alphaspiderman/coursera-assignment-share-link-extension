@@ -2,7 +2,7 @@
   "name": "coursera-assignment-submission-link-extractor",
   "description": "Extracts your submission's review link from the Coursera assignment page",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.1+",
   "type": "module",
   "scripts": {
     "dev": "wxt",
