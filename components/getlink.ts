@@ -9,8 +9,9 @@ export function setupExtractor(
 
   // Get active tab
   browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    tabId = tabs[0]?.id || -1;
-    url = tabs[0]?.url || "";
+    const activeTab = tabs[0];
+    tabId = activeTab?.id || -1;
+    url = activeTab?.url || "";
     console.log("Active URL:", url);
   });
 
@@ -36,33 +37,24 @@ export function setupExtractor(
     }
 
     const stripped = url.replace("https://www.coursera.org/learn/", "");
-    const [courseSlug, , assignmentId] = stripped.split("/");
+    const [, , assignmentId] = stripped.split("/");
     const storageKey = `peerSubmissionId-${assignmentId}`;
 
     try {
       const data = await storage.getItem(`local:${storageKey}`);
-      if (data) {
-        showReviewLink(courseSlug, assignmentId, data);
-      } else {
-        handleMissingData(courseSlug, assignmentId, storageKey);
-      }
+      data ? showReviewLink(url, data) : handleMissingData(url, storageKey);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   });
 
-  function showReviewLink(courseSlug: string, assignmentId: string, data: any) {
-    const reviewLink = `https://www.coursera.org/learn/${courseSlug}/peer/${assignmentId}/review/${data}`;
-    const assignmentLink = document.getElementById("assignmentLink");
-    const outputLink = document.getElementById("output_link");
-    const outputNoLink = document.getElementById("output_no_link");
+  function showReviewLink(courseUrl: string, data: any) {
+    const reviewLink = courseUrl.replace("/submit", `/review/${data}`);
+    document.getElementById("assignmentLink")?.setAttribute("href", reviewLink);
+    document.getElementById("output_link")?.removeAttribute("hidden");
+    document.getElementById("output_no_link")?.setAttribute("hidden", "true");
 
-    assignmentLink?.setAttribute("href", reviewLink);
-    outputLink?.removeAttribute("hidden");
-    outputNoLink?.setAttribute("hidden", "true");
-
-    const copyButton = document.getElementById("copyButton");
-    copyButton?.addEventListener("click", () => {
+    document.getElementById("copyButton")?.addEventListener("click", () => {
       navigator.clipboard
         .writeText(reviewLink)
         .then(() => alert("Link copied to clipboard!"))
@@ -70,18 +62,14 @@ export function setupExtractor(
     });
   }
 
-  async function handleMissingData(
-    courseSlug: string,
-    assignmentId: string,
-    storageKey: string
-  ) {
+  async function handleMissingData(courseUrl: string, storageKey: string) {
     const outputNoLink = document.getElementById("output_no_link");
     outputNoLink?.removeAttribute("hidden");
 
     setTimeout(async () => {
       const data = await storage.getItem(`local:${storageKey}`);
       if (data) {
-        showReviewLink(courseSlug, assignmentId, data);
+        showReviewLink(courseUrl, data);
       } else {
         outputNoLink!.innerText =
           "Failed to get the review link. Please try again by reloading the page!";
